@@ -18,9 +18,10 @@ CONFIG_FILE="$CONFIG_FOLDER/send-proxy.conf"
 
 echo "-----> Setting send-proxy"
 echo "Writing to $CONFIG_FILE"
-echo "# auotgen by nginx-send-proxy" > $CONFIG_FILE
+echo "# auotgen by nginx-send-proxy plugin" > $CONFIG_FILE
 
 if [ -z "$SEND_PROXY_ENABLED" ]; then
+  echo "# send-proxy disabled." >> $CONFIG_FILE
   exit 0;
 else
   echo "real_ip_header proxy_protocol;" >> $CONFIG_FILE
