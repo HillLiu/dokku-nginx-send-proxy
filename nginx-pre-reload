@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/config/functions"
+source "$PLUGIN_CORE_AVAILABLE_PATH/nginx-vhosts/functions"
+
+APP="$1"
+
+eval "$(config_export app "$APP")"
+
+CONFIG_FOLDER="$DOKKU_ROOT/$APP/nginx.conf.d"
+
+CONFIG_FILE="$CONFIG_FOLDER/send-proxy.conf"
+
+[[ -d "$CONFIG_FOLDER" ]] || mkdir "$CONFIG_FOLDER"
+
+if [ -z "$SEND_PROXY_ENABLED" ]; then
+  exit 0;
+fi
+
+echo "-----> Setting send-proxy"
+echo "Writing to $CONFIG_FILE"
+echo "# auotgen by nginx-send-proxy" > $CONFIG_FILE
+echo "real_ip_header proxy_protocol;" >> $CONFIG_FILE
+
+if [ ! -z "$SEND_PROXY_SSL_PORT" ]; then
+  echo "listen      [::]:$SEND_PROXY_SSL_PORT ssl proxy_protocol;" >> $CONFIG_FILE
+  echo "listen      $SEND_PROXY_SSL_PORT ssl proxy_protocol;" >> $CONFIG_FILE
+fi
+
+if [ ! -z "$SEND_PROXY_HTTP2_PORT" ]; then
+  echo "listen      [::]:$SEND_PROXY_HTTP2_PORT http2 proxy_protocol;" >> $CONFIG_FILE
+  echo "listen      $SEND_PROXY_HTTP2_PORT http2 proxy_protocol;" >> $CONFIG_FILE
+fi
+
+if [ ! -z "$SEND_PROXY_ALLOW_IP" ]; then
+  echo "set_real_ip_from $SEND_PROXY_ALLOW_IP;" >> $CONFIG_FILE
+else
+  echo "set_real_ip_from 0.0.0.0/0;" >> $CONFIG_FILE
+fi
+
+chown dokku:dokku $CONFIG_FILE
+
+restart_nginx
