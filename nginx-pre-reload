@@ -16,14 +16,15 @@ CONFIG_FILE="$CONFIG_FOLDER/send-proxy.conf"
 
 [[ -d "$CONFIG_FOLDER" ]] || mkdir "$CONFIG_FOLDER"
 
-if [ -z "$SEND_PROXY_ENABLED" ]; then
-  exit 0;
-fi
-
 echo "-----> Setting send-proxy"
 echo "Writing to $CONFIG_FILE"
 echo "# auotgen by nginx-send-proxy" > $CONFIG_FILE
-echo "real_ip_header proxy_protocol;" >> $CONFIG_FILE
+
+if [ -z "$SEND_PROXY_ENABLED" ]; then
+  exit 0;
+else
+  echo "real_ip_header proxy_protocol;" >> $CONFIG_FILE
+fi
 
 if [ ! -z "$SEND_PROXY_SSL_PORT" ]; then
   echo "listen      [::]:$SEND_PROXY_SSL_PORT ssl proxy_protocol;" >> $CONFIG_FILE
