@@ -22,6 +22,7 @@ echo "# auotgen by nginx-send-proxy plugin" > $CONFIG_FILE
 
 if [ -z "$SEND_PROXY_ENABLED" ]; then
   echo "# send-proxy disabled." >> $CONFIG_FILE
+  echo "send-proxy disabled."
   exit 0;
 else
   echo "real_ip_header proxy_protocol;" >> $CONFIG_FILE
